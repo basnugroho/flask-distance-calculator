@@ -5,11 +5,12 @@
   </head>
   <body>
     <h2>Walking Distance Matrix and Haversine Distance Calculator</h2>
-    <p>Upload File Excel (sesuai format):</p>
+    <p>Upload File Excel <a href="https://docs.google.com/spreadsheets/d/1ILlTpNcL-Vz-xPafor00tbJ3AQll6iNy/edit?usp=share_link&ouid=111335954378712229850&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">(sesuai format)</a>:</p>
     <form method="POST" enctype="multipart/form-data" action="/">
         <input type="file" id="myFile" name="uploaded-file" accept=".xlsx">
         <input type="submit" value="Upload file">
     </form>
+    <p><small>quota: {{ processed }}/{{ quota }}</small></p>
   <br>
   <hr>
   <p style="color:black;">Perhitungan:</p>
