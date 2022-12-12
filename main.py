@@ -29,16 +29,16 @@ app.secret_key = 'This is your secret key to utilize session in Flask'
 
 quota = 2000
 
-pwd = os.path.abspath("")
+cwd = os.getcwd()
 API_key = 'AIzaSyBvJaPeqmGdxeJlxfDwDyNmjj1h1ZD9_bg'   #enter the key you got from Google. I removed mine here
 gmaps = googlemaps.Client(key=API_key)
 
 def read_upload_quota():
-    df = pd.read_csv("/root/flask-distance-calculator/log/processed.csv")
+    df = pd.read_csv(cwd+"/log/processed.csv")
     return df['processed'].sum()
 
 def update_upload_quota(waktu, row, elapsed_time):
-    fileName = "/root/flask-distance-calculator/log/processed.csv"
+    fileName = cwd+"/log/processed.csv"
     fileEmpty = os.stat(fileName).st_size == 0
     with open(fileName, "a") as csvfile:
         headers = ['date_time', 'processed', 'elapsed_time']
@@ -126,7 +126,7 @@ def uploadFile():
         #finally return the file
         update_upload_quota(date_time, len(df["walking_distance (m)"]), "{0:,.2f}".format(end - start))
         print("quota updated")
-        df.to_excel(f"{pwd}/results/result_{data_filename}")
+        df.to_excel(f"{cwd}/results/result_{data_filename}")
         print("result saved")
         return send_file(output, download_name=f"result_{data_filename}.xlsx", as_attachment=True);return render_template('index_upload_and_show_data_page2.html', time_elapsed="{0:,.2f}".format(end - start))
  
