@@ -29,16 +29,16 @@ app.secret_key = 'This is your secret key to utilize session in Flask'
 
 quota = 2000
 
- 
+pwd = os.path.abspath("")
 API_key = 'AIzaSyBvJaPeqmGdxeJlxfDwDyNmjj1h1ZD9_bg'   #enter the key you got from Google. I removed mine here
 gmaps = googlemaps.Client(key=API_key)
 
 def read_upload_quota():
-    df = pd.read_csv('./log/processed.csv')
+    df = pd.read_csv("/root/flask-distance-calculator/log/processed.csv")
     return df['processed'].sum()
 
 def update_upload_quota(waktu, row, elapsed_time):
-    fileName = "./log/processed.csv"
+    fileName = "/root/flask-distance-calculator/log/processed.csv"
     fileEmpty = os.stat(fileName).st_size == 0
     with open(fileName, "a") as csvfile:
         headers = ['date_time', 'processed', 'elapsed_time']
@@ -49,7 +49,10 @@ def update_upload_quota(waktu, row, elapsed_time):
         writer.writerow({'date_time': waktu, 'processed': row, 'elapsed_time': str(elapsed_time)})
 
 def google_calc_walking_distance(origin_point, dest_point):
-  result = gmaps.distance_matrix(origin_point, dest_point, mode='walking')['rows'][0]['elements'][0]['distance']['value']
+  try:
+    result = gmaps.distance_matrix(origin_point, dest_point, mode='walking')['rows'][0]['elements'][0]['distance']['value']
+  except KeyError:
+    result = "error"
   return result
 
 def google_calc_distance_bulk(lata,latb,latc,latd):
@@ -63,7 +66,10 @@ def google_calc_distance_bulk(lata,latb,latc,latd):
 def haversine_calc_dists(lata,latb,latc,latd):
     distances = []
     for i,x in enumerate(lata):
+      try:
         distances.append(hs.haversine((lata[i],latb[i]),(latc[i],latd[i]),unit=Unit.METERS))
+      except:
+        distances.append("error")
     return distances
 
 @app.route('/')
@@ -81,10 +87,10 @@ def uploadFile():
         data_filename = secure_filename(uploaded_df.filename)
  
         # flask upload file to database (defined uploaded folder in static path)
-        uploaded_df.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
+        #uploaded_df.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
 
         # Storing uploaded file path in flask session
-        session['uploaded_data_file_path'] = os.path.join(app.config['UPLOAD_FOLDER'], data_filename)
+        #session['uploaded_data_file_path'] = "/root/flask-distance-calculator/"+data_filename
 
         # process the file
         df = pd.read_excel(uploaded_df)
@@ -120,10 +126,9 @@ def uploadFile():
         #finally return the file
         update_upload_quota(date_time, len(df["walking_distance (m)"]), "{0:,.2f}".format(end - start))
         print("quota updated")
-        df.to_excel(f"./results/result_{data_filename}.xlsx")
+        df.to_excel(f"{pwd}/results/result_{data_filename}")
         print("result saved")
-        return send_file(output, download_name=f"result_{data_filename}.xlsx", as_attachment=True)
-        # return render_template('index_upload_and_show_data_page2.html')
+        return send_file(output, download_name=f"result_{data_filename}.xlsx", as_attachment=True);return render_template('index_upload_and_show_data_page2.html', time_elapsed="{0:,.2f}".format(end - start))
  
 @app.route('/show_data')
 def showData():
@@ -164,4 +169,4 @@ def download():
     return send_file(output, download_name="testing.xlsx", as_attachment=True)
  
 if __name__=='__main__':
-    app.run(debug = True)
+    app.run(host='0.0.0.0')
